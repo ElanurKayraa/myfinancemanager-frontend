@@ -26,26 +26,31 @@
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      ausgaben: [],
-      loading: true,
-      fehler: null
-    }
-  },
-  async mounted() {
-    try {
-      const response = await fetch('https://myfinancemanager-backend-f.onrender.com/ausgaben')
-      this.ausgaben = await response.json()
-    } catch (e) {
-      this.fehler = 'Fehler beim Laden der Daten.'
-    } finally {
-      this.loading = false
-    }
-  }
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
+interface Ausgabe {
+  id: number
+  titel: string
+  betrag: number
+  kategorie: string
+  datum: string
 }
+
+const ausgaben = ref<Ausgabe[]>([])
+const loading = ref(true)
+const fehler = ref<string | null>(null)
+
+onMounted(async () => {
+  try {
+    const response = await fetch('https://myfinancemanager-backend-f.onrender.com/ausgaben')
+    ausgaben.value = await response.json()
+  } catch (e) {
+    fehler.value = 'Fehler beim Laden der Daten.'
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <style>
