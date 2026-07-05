@@ -138,7 +138,7 @@
           </div>
 
           <div class="form-grid">
-            <input v-model="neueAusgabe.titel" class="field-input" placeholder="Titel" />
+            <input v-model="neueAusgabe.titel" class="field-input span-all" placeholder="Titel" />
             <input v-model.number="neueAusgabe.betrag" class="field-input mono" placeholder="Betrag" type="number" step="0.01" />
             <input v-model="neueAusgabe.datum" class="field-input" type="date" />
             <select v-model="neueAusgabe.kategorie" class="field-input">
@@ -504,6 +504,7 @@ h1, h2, .brand span { font-family: 'Space Grotesk', sans-serif; }
 .field-label { display: block; font-size: 0.78rem; color: var(--text-muted); margin: 14px 0 6px; }
 .field-input {
   width: 100%;
+  min-width: 0;
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--text);
@@ -700,9 +701,10 @@ h1, h2, .brand span { font-family: 'Space Grotesk', sans-serif; }
 
 .form-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
+.form-grid .span-all { grid-column: 1 / -1; }
 
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table thead th {
