@@ -1,236 +1,201 @@
 <template>
-  <div class="page">
-    <nav class="navbar navbar-dark app-navbar mb-4">
-      <div class="container">
-        <span class="navbar-brand fw-bold">
-          <i class="bi bi-wallet2 me-2"></i>Mein Finance Manager
-        </span>
-        <span v-if="benutzer && step !== 'login' && step !== 'register'" class="text-white-50 small">
-          {{ benutzer.benutzername }}
-          <button class="btn btn-sm btn-outline-light ms-3" @click="abmelden">
-            <i class="bi bi-box-arrow-right me-1"></i>Abmelden
-          </button>
-        </span>
+  <!-- ============ AUTH SCREENS (Login/Register) ============ -->
+  <div v-if="step === 'login' || step === 'register'" class="auth-screen">
+    <div class="auth-glow"></div>
+    <div class="auth-card">
+      <div class="brand mb-4">
+        <i class="bi bi-wallet2"></i>
+        <span>Finance Manager</span>
       </div>
-    </nav>
 
-    <div class="container" style="max-width: 680px;">
-      <div v-if="fehler" class="alert alert-danger d-flex align-items-center" role="alert">
+      <div v-if="fehler" class="alert-custom mb-3">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ fehler }}
       </div>
 
-      <!-- ================= LOGIN ================= -->
-      <div v-if="step === 'login'" class="card shadow-sm border-0">
-        <div class="card-body p-4">
-          <h2 class="card-title mb-4 fw-semibold">Anmelden</h2>
-          <div class="mb-3">
-            <label class="form-label">Benutzername</label>
-            <input v-model="loginDaten.benutzername" class="form-control" placeholder="z.B. serda" />
-          </div>
-          <div class="mb-4">
-            <label class="form-label">Passwort</label>
-            <input v-model="loginDaten.passwort" class="form-control" type="password" placeholder="••••••••" />
-          </div>
-          <button class="btn btn-primary w-100 mb-3" @click="anmelden">
-            <i class="bi bi-box-arrow-in-right me-1"></i>Anmelden
-          </button>
-          <p class="text-center mb-0 small">
-            Noch kein Konto?
-            <a href="#" class="link-primary" @click.prevent="step = 'register'">Registrieren</a>
-          </p>
-        </div>
-      </div>
+      <template v-if="step === 'login'">
+        <h1 class="auth-title">Willkommen zurück</h1>
+        <p class="auth-sub">Melde dich an, um deine Finanzen im Blick zu behalten.</p>
+        <label class="field-label">Benutzername</label>
+        <input v-model="loginDaten.benutzername" class="field-input" placeholder="z.B. serda" />
+        <label class="field-label">Passwort</label>
+        <input v-model="loginDaten.passwort" class="field-input" type="password" placeholder="••••••••" />
+        <button class="btn-primary-custom w-100 mt-2" @click="anmelden">Anmelden</button>
+        <p class="auth-switch">Noch kein Konto? <a href="#" @click.prevent="step = 'register'">Registrieren</a></p>
+      </template>
 
-      <!-- ================= REGISTRIEREN ================= -->
-      <div v-else-if="step === 'register'" class="card shadow-sm border-0">
-        <div class="card-body p-4">
-          <h2 class="card-title mb-4 fw-semibold">Registrieren</h2>
-          <div class="mb-3">
-            <label class="form-label">Benutzername</label>
-            <input v-model="registerDaten.benutzername" class="form-control" placeholder="Wähle einen Benutzernamen" />
-          </div>
-          <div class="mb-4">
-            <label class="form-label">Passwort</label>
-            <input v-model="registerDaten.passwort" class="form-control" type="password" placeholder="Mindestens ein sicheres Passwort" />
-          </div>
-          <button class="btn btn-primary w-100 mb-3" @click="registrieren">
-            <i class="bi bi-person-plus-fill me-1"></i>Registrieren
-          </button>
-          <p class="text-center mb-0 small">
-            Schon ein Konto?
-            <a href="#" class="link-primary" @click.prevent="step = 'login'">Anmelden</a>
-          </p>
-        </div>
-      </div>
-
-      <!-- ================= PROFILE ================= -->
-      <div v-else-if="step === 'profil'">
-        <div class="card shadow-sm border-0 mb-4">
-          <div class="card-body p-4">
-            <h2 class="card-title mb-3 fw-semibold">Neues Profil anlegen</h2>
-            <div class="input-group">
-              <input v-model="neuesProfilName" class="form-control" placeholder="z.B. Girokonto, Urlaubskasse" />
-              <button class="btn btn-primary" @click="profilErstellen">
-                <i class="bi bi-plus-lg me-1"></i>Erstellen
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <h2 class="fw-semibold mb-3 fs-5 text-secondary">Profil auswählen</h2>
-        <p v-if="profile.length === 0" class="text-muted">Noch keine Profile vorhanden.</p>
-        <div class="list-group shadow-sm">
-          <div
-            v-for="profil in profile"
-            :key="profil.id"
-            class="list-group-item d-flex justify-content-between align-items-center py-3"
-          >
-            <template v-if="umbenennenId === profil.id">
-              <input v-model="umbenennenName" class="form-control form-control-sm me-2" @keyup.enter="profilUmbenennenSpeichern(profil)" />
-              <div class="d-flex gap-1">
-                <button class="btn btn-sm btn-success" @click="profilUmbenennenSpeichern(profil)">
-                  <i class="bi bi-check-lg"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary" @click="umbenennenId = null">
-                  <i class="bi bi-x-lg"></i>
-                </button>
-              </div>
-            </template>
-            <template v-else>
-              <span class="flex-fill" role="button" @click="profilAuswaehlen(profil)">
-                <i class="bi bi-folder2-open me-2 text-primary"></i>{{ profil.name }}
-              </span>
-              <button class="btn btn-sm btn-outline-secondary me-1" @click="profilUmbenennenStarten(profil)">
-                <i class="bi bi-pencil-fill"></i>
-              </button>
-              <i class="bi bi-chevron-right text-muted" role="button" @click="profilAuswaehlen(profil)"></i>
-            </template>
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= DASHBOARD ================= -->
-      <div v-else-if="step === 'dashboard'">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2 class="fw-semibold fs-5 mb-0">
-            <i class="bi bi-folder2-open me-2 text-primary"></i>{{ currentProfil?.name }}
-          </h2>
-          <button class="btn btn-sm btn-outline-secondary" @click="profilWechseln">
-            <i class="bi bi-arrow-left-right me-1"></i>Profil wechseln
-          </button>
-        </div>
-
-        <div class="row g-3 mb-4">
-          <div class="col-4">
-            <div class="card border-0 shadow-sm text-center py-2">
-              <div class="text-muted small">Einnahmen</div>
-              <div class="fw-bold text-success">+{{ summeEinnahmen.toFixed(2) }} €</div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="card border-0 shadow-sm text-center py-2">
-              <div class="text-muted small">Ausgaben</div>
-              <div class="fw-bold text-danger">-{{ summeAusgaben.toFixed(2) }} €</div>
-            </div>
-          </div>
-          <div class="col-4">
-            <div class="card border-0 shadow-sm text-center py-2">
-              <div class="text-muted small">Saldo</div>
-              <div class="fw-bold" :class="saldo >= 0 ? 'text-success' : 'text-danger'">{{ saldo.toFixed(2) }} €</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card shadow-sm border-0 mb-4">
-          <div class="card-body p-4">
-            <h2 class="card-title mb-3 fw-semibold fs-5">
-              {{ bearbeitenId ? 'Eintrag bearbeiten' : 'Neuen Eintrag hinzufügen' }}
-            </h2>
-
-            <div class="btn-group w-100 mb-3" role="group">
-              <input type="radio" class="btn-check" id="typAusgabe" value="AUSGABE" v-model="neueAusgabe.typ" />
-              <label class="btn btn-outline-danger" for="typAusgabe"><i class="bi bi-dash-circle me-1"></i>Ausgabe</label>
-
-              <input type="radio" class="btn-check" id="typEinnahme" value="EINNAHME" v-model="neueAusgabe.typ" />
-              <label class="btn btn-outline-success" for="typEinnahme"><i class="bi bi-plus-circle me-1"></i>Einnahme</label>
-            </div>
-
-            <div class="row g-2">
-              <div class="col-12 col-sm-6">
-                <input v-model="neueAusgabe.titel" class="form-control" placeholder="Titel" />
-              </div>
-              <div class="col-6 col-sm-3">
-                <input v-model.number="neueAusgabe.betrag" class="form-control" placeholder="Betrag" type="number" step="0.01" />
-              </div>
-              <div class="col-6 col-sm-3">
-                <input v-model="neueAusgabe.datum" class="form-control" type="date" />
-              </div>
-              <div class="col-12">
-                <select v-model="neueAusgabe.kategorie" class="form-select">
-                  <option disabled value="">Kategorie wählen</option>
-                  <option v-for="k in kategorien" :key="k" :value="k">{{ k }}</option>
-                </select>
-              </div>
-              <div class="col-12 d-flex gap-2 mt-2">
-                <button class="btn btn-primary flex-fill" @click="ausgabeSpeichern">
-                  <i class="bi" :class="bearbeitenId ? 'bi-check-lg' : 'bi-plus-lg'"></i>
-                  {{ bearbeitenId ? ' Aktualisieren' : ' Hinzufügen' }}
-                </button>
-                <button v-if="bearbeitenId" class="btn btn-outline-secondary" @click="bearbeitenAbbrechen">
-                  Abbrechen
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="loading" class="text-center text-muted py-4">
-          <div class="spinner-border spinner-border-sm me-2"></div>Daten werden geladen...
-        </div>
-
-        <div v-else-if="ausgaben.length === 0" class="text-center text-muted py-5">
-          <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-          Noch keine Einträge für dieses Profil.
-        </div>
-
-        <div v-else class="card shadow-sm border-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Titel</th>
-                  <th>Betrag</th>
-                  <th>Kategorie</th>
-                  <th>Datum</th>
-                  <th class="text-end">Aktionen</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="ausgabe in ausgaben" :key="ausgabe.id">
-                  <td>
-                    <i class="bi me-1" :class="ausgabe.typ === 'EINNAHME' ? 'bi-plus-circle-fill text-success' : 'bi-dash-circle-fill text-danger'"></i>
-                    {{ ausgabe.titel }}
-                  </td>
-                  <td class="fw-semibold" :class="ausgabe.typ === 'EINNAHME' ? 'text-success' : 'text-danger'">
-                    {{ ausgabe.typ === 'EINNAHME' ? '+' : '-' }}{{ ausgabe.betrag.toFixed(2) }} €
-                  </td>
-                  <td><span class="badge rounded-pill" :class="badgeKlasse(ausgabe.kategorie)">{{ ausgabe.kategorie }}</span></td>
-                  <td class="text-muted">{{ ausgabe.datum }}</td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary me-1" @click="ausgabeBearbeitenStarten(ausgabe)">
-                      <i class="bi bi-pencil-fill"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" @click="ausgabeLoeschen(ausgabe.id)">
-                      <i class="bi bi-trash-fill"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+      <template v-else>
+        <h1 class="auth-title">Konto erstellen</h1>
+        <p class="auth-sub">Leg los und behalte Einnahmen &amp; Ausgaben im Griff.</p>
+        <label class="field-label">Benutzername</label>
+        <input v-model="registerDaten.benutzername" class="field-input" placeholder="Wähle einen Benutzernamen" />
+        <label class="field-label">Passwort</label>
+        <input v-model="registerDaten.passwort" class="field-input" type="password" placeholder="Sicheres Passwort" />
+        <button class="btn-primary-custom w-100 mt-2" @click="registrieren">Registrieren</button>
+        <p class="auth-switch">Schon ein Konto? <a href="#" @click.prevent="step = 'login'">Anmelden</a></p>
+      </template>
     </div>
+  </div>
+
+  <!-- ============ APP SHELL (Profile / Dashboard) ============ -->
+  <div v-else class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <i class="bi bi-wallet2"></i>
+        <span>Finance Manager</span>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="avatar">{{ initialen }}</div>
+        <div>
+          <div class="user-name">{{ benutzer?.benutzername }}</div>
+          <div class="user-tag">Angemeldet</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Profile</div>
+        <button
+          v-for="profil in profile"
+          :key="profil.id"
+          class="nav-item"
+          :class="{ active: currentProfil?.id === profil.id }"
+          @click="profilAuswaehlen(profil)"
+        >
+          <i class="bi bi-folder2-open"></i>
+          <span v-if="umbenennenId !== profil.id" class="flex-fill text-truncate">{{ profil.name }}</span>
+          <input
+            v-else
+            v-model="umbenennenName"
+            class="rename-input"
+            @click.stop
+            @keyup.enter="profilUmbenennenSpeichern(profil)"
+          />
+          <i v-if="umbenennenId !== profil.id" class="bi bi-pencil rename-icon" @click.stop="profilUmbenennenStarten(profil)"></i>
+          <i v-else class="bi bi-check-lg rename-icon text-success" @click.stop="profilUmbenennenSpeichern(profil)"></i>
+        </button>
+
+        <div class="new-profil">
+          <input v-model="neuesProfilName" class="rename-input flex-fill" placeholder="Neues Profil..." @keyup.enter="profilErstellen" />
+          <button class="add-profil-btn" @click="profilErstellen"><i class="bi bi-plus-lg"></i></button>
+        </div>
+      </nav>
+
+      <button class="logout-btn" @click="abmelden">
+        <i class="bi bi-box-arrow-right"></i> Abmelden
+      </button>
+    </aside>
+
+    <main class="main-area">
+      <div v-if="fehler" class="alert-custom mb-3">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ fehler }}
+      </div>
+
+      <!-- No profile selected yet -->
+      <div v-if="step === 'profil'" class="empty-state">
+        <i class="bi bi-folder2-open"></i>
+        <h2>Wähle ein Profil</h2>
+        <p>Klick links auf ein bestehendes Profil oder leg ein neues an, um loszulegen.</p>
+      </div>
+
+      <!-- Dashboard -->
+      <div v-else>
+        <div class="main-header">
+          <h1><i class="bi bi-folder2-open me-2"></i>{{ currentProfil?.name }}</h1>
+        </div>
+
+        <div class="balance-hero">
+          <div class="balance-label">Saldo</div>
+          <div class="balance-amount" :class="saldo >= 0 ? 'positive' : 'negative'">
+            {{ saldo >= 0 ? '+' : '' }}{{ saldo.toFixed(2) }} €
+          </div>
+          <div class="balance-bar">
+            <div class="balance-bar-fill" :style="{ width: anteilEinnahmen + '%' }"></div>
+          </div>
+          <div class="balance-legend">
+            <span><i class="bi bi-circle-fill text-success"></i> Einnahmen: {{ summeEinnahmen.toFixed(2) }} €</span>
+            <span><i class="bi bi-circle-fill text-danger"></i> Ausgaben: {{ summeAusgaben.toFixed(2) }} €</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="panel-title">{{ bearbeitenId ? 'Eintrag bearbeiten' : 'Neuer Eintrag' }}</h2>
+
+          <div class="type-toggle">
+            <button
+              class="type-btn expense"
+              :class="{ active: neueAusgabe.typ === 'AUSGABE' }"
+              @click="neueAusgabe.typ = 'AUSGABE'"
+            >
+              <i class="bi bi-dash-circle"></i> Ausgabe
+            </button>
+            <button
+              class="type-btn income"
+              :class="{ active: neueAusgabe.typ === 'EINNAHME' }"
+              @click="neueAusgabe.typ = 'EINNAHME'"
+            >
+              <i class="bi bi-plus-circle"></i> Einnahme
+            </button>
+          </div>
+
+          <div class="form-grid">
+            <input v-model="neueAusgabe.titel" class="field-input" placeholder="Titel" />
+            <input v-model.number="neueAusgabe.betrag" class="field-input mono" placeholder="Betrag" type="number" step="0.01" />
+            <input v-model="neueAusgabe.datum" class="field-input" type="date" />
+            <select v-model="neueAusgabe.kategorie" class="field-input">
+              <option disabled value="">Kategorie wählen</option>
+              <option v-for="k in kategorien" :key="k" :value="k">{{ k }}</option>
+            </select>
+          </div>
+
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn-primary-custom flex-fill" @click="ausgabeSpeichern">
+              {{ bearbeitenId ? 'Aktualisieren' : 'Hinzufügen' }}
+            </button>
+            <button v-if="bearbeitenId" class="btn-ghost" @click="bearbeitenAbbrechen">Abbrechen</button>
+          </div>
+        </div>
+
+        <div v-if="loading" class="empty-state small">
+          <div class="spinner-border spinner-border-sm"></div> Daten werden geladen...
+        </div>
+
+        <div v-else-if="ausgaben.length === 0" class="empty-state small">
+          <i class="bi bi-inbox"></i>
+          <p class="mb-0">Noch keine Einträge für dieses Profil.</p>
+        </div>
+
+        <div v-else class="panel p-0 overflow-hidden">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Titel</th>
+                <th>Betrag</th>
+                <th>Kategorie</th>
+                <th>Datum</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="ausgabe in ausgaben" :key="ausgabe.id">
+                <td>
+                  <i class="bi me-2" :class="ausgabe.typ === 'EINNAHME' ? 'bi-plus-circle-fill text-success' : 'bi-dash-circle-fill text-danger'"></i>
+                  {{ ausgabe.titel }}
+                </td>
+                <td class="mono fw-semibold" :class="ausgabe.typ === 'EINNAHME' ? 'text-success' : 'text-danger'">
+                  {{ ausgabe.typ === 'EINNAHME' ? '+' : '-' }}{{ ausgabe.betrag.toFixed(2) }} €
+                </td>
+                <td><span class="cat-badge" :data-cat="ausgabe.kategorie">{{ ausgabe.kategorie }}</span></td>
+                <td class="text-muted-custom">{{ ausgabe.datum }}</td>
+                <td class="text-end">
+                  <button class="icon-btn" @click="ausgabeBearbeitenStarten(ausgabe)"><i class="bi bi-pencil-fill"></i></button>
+                  <button class="icon-btn danger" @click="ausgabeLoeschen(ausgabe.id)"><i class="bi bi-trash-fill"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
@@ -262,20 +227,6 @@ const BASE_URL = 'https://myfinancemanager-backend-jjrd.onrender.com'
 
 const kategorien = ['Lebensmittel', 'Miete', 'Transport', 'Freizeit', 'Gesundheit', 'Gehalt', 'Sonstiges']
 
-const kategorieFarben: Record<string, string> = {
-  Lebensmittel: 'text-bg-success',
-  Miete: 'text-bg-primary',
-  Transport: 'text-bg-warning',
-  Freizeit: 'text-bg-info',
-  Gesundheit: 'text-bg-danger',
-  Gehalt: 'text-bg-success',
-  Sonstiges: 'text-bg-secondary',
-}
-
-function badgeKlasse(kategorie: string) {
-  return kategorieFarben[kategorie] ?? 'text-bg-secondary'
-}
-
 const step = ref<'login' | 'register' | 'profil' | 'dashboard'>('login')
 const fehler = ref<string | null>(null)
 const loading = ref(false)
@@ -294,6 +245,8 @@ const ausgaben = ref<Ausgabe[]>([])
 const bearbeitenId = ref<number | null>(null)
 const neueAusgabe = ref({ titel: '', betrag: 0, kategorie: '', datum: '', typ: 'AUSGABE' as 'AUSGABE' | 'EINNAHME' })
 
+const initialen = computed(() => (benutzer.value?.benutzername ?? '?').slice(0, 2).toUpperCase())
+
 const summeEinnahmen = computed(() =>
   ausgaben.value.filter(a => a.typ === 'EINNAHME').reduce((summe, a) => summe + a.betrag, 0)
 )
@@ -301,6 +254,10 @@ const summeAusgaben = computed(() =>
   ausgaben.value.filter(a => a.typ !== 'EINNAHME').reduce((summe, a) => summe + a.betrag, 0)
 )
 const saldo = computed(() => summeEinnahmen.value - summeAusgaben.value)
+const anteilEinnahmen = computed(() => {
+  const gesamt = summeEinnahmen.value + summeAusgaben.value
+  return gesamt === 0 ? 50 : Math.round((summeEinnahmen.value / gesamt) * 100)
+})
 
 async function anmelden() {
   fehler.value = null
@@ -405,12 +362,6 @@ function profilAuswaehlen(profil: Profil) {
   ladeAusgaben()
 }
 
-function profilWechseln() {
-  step.value = 'profil'
-  currentProfil.value = null
-  ausgaben.value = []
-}
-
 async function ladeAusgaben() {
   if (!currentProfil.value) return
   try {
@@ -480,35 +431,340 @@ async function ausgabeLoeschen(id: number) {
 </script>
 
 <style>
+:root {
+  --bg: #0b1220;
+  --surface: #141b2d;
+  --surface-2: #1c2540;
+  --border: rgba(255,255,255,0.08);
+  --text: #e7ecf5;
+  --text-muted: #8b96ad;
+  --gold: #f2b84b;
+  --gold-dim: rgba(242,184,75,0.15);
+  --green: #34d399;
+  --rose: #fb6f92;
+}
+
+* { box-sizing: border-box; }
+
 body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(180deg, #eef2f7 0%, #e4ebf3 100%);
+}
+
+h1, h2, .brand span { font-family: 'Space Grotesk', sans-serif; }
+.mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+/* ---------- Auth screens ---------- */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+}
+.auth-glow {
+  position: absolute;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(242,184,75,0.16) 0%, rgba(242,184,75,0) 70%);
+  top: -200px;
+  right: -150px;
+  pointer-events: none;
+}
+.auth-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.auth-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 4px; }
+.auth-sub { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
+.auth-switch { text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-muted); }
+.auth-switch a { color: var(--gold); text-decoration: none; font-weight: 500; }
+.auth-switch a:hover { text-decoration: underline; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.brand i { color: var(--gold); font-size: 1.3rem; }
+
+.field-label { display: block; font-size: 0.78rem; color: var(--text-muted); margin: 14px 0 6px; }
+.field-input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 0.92rem;
+  font-family: inherit;
+}
+.field-input::placeholder { color: #5b6577; }
+.field-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-dim);
+}
+
+.btn-primary-custom {
+  background: var(--gold);
+  color: #1a1305;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.btn-primary-custom:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(242,184,75,0.25); }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 12px 18px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.btn-ghost:hover { border-color: var(--text-muted); color: var(--text); }
+
+.alert-custom {
+  background: rgba(251,111,146,0.12);
+  border: 1px solid rgba(251,111,146,0.3);
+  color: #ffb3c4;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+}
+
+/* ---------- App shell ---------- */
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
   min-height: 100vh;
 }
-.page {
-  min-height: 100vh;
-  padding-bottom: 60px;
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
-.app-navbar {
-  background: linear-gradient(90deg, #1e293b 0%, #334155 100%);
-  padding: 1rem 0;
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--surface-2);
+  border-radius: 10px;
 }
-.card {
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.user-name { font-size: 0.85rem; font-weight: 600; }
+.user-tag { font-size: 0.72rem; color: var(--text-muted); }
+
+.sidebar-nav { flex: 1; overflow-y: auto; }
+.nav-section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.87rem;
+  cursor: pointer;
+  margin-bottom: 4px;
+  text-align: left;
+}
+.nav-item:hover { background: var(--surface-2); color: var(--text); }
+.nav-item.active { background: var(--gold-dim); color: var(--gold); }
+.rename-icon { opacity: 0.6; }
+.rename-icon:hover { opacity: 1; }
+.rename-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.82rem;
+  min-width: 0;
+}
+.new-profil { display: flex; gap: 6px; margin-top: 12px; }
+.add-profil-btn {
+  background: var(--gold-dim);
+  color: var(--gold);
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  cursor: pointer;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.logout-btn:hover { color: var(--rose); border-color: var(--rose); }
+
+.main-area { padding: 32px 40px; max-width: 900px; }
+.main-header h1 { font-size: 1.4rem; margin-bottom: 20px; }
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 60px 20px;
+}
+.empty-state.small { padding: 30px 20px; }
+.empty-state i { font-size: 2.2rem; display: block; margin-bottom: 10px; opacity: 0.5; }
+
+.balance-hero {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 26px 28px;
+  margin-bottom: 24px;
+}
+.balance-label { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 4px; }
+.balance-amount { font-family: 'JetBrains Mono', monospace; font-size: 2.4rem; font-weight: 600; }
+.balance-amount.positive { color: var(--green); }
+.balance-amount.negative { color: var(--rose); }
+.balance-bar {
+  height: 8px;
+  background: var(--rose);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 16px 0 10px;
+}
+.balance-bar-fill { height: 100%; background: var(--green); }
+.balance-legend { display: flex; gap: 20px; font-size: 0.8rem; color: var(--text-muted); }
+.balance-legend i { font-size: 0.55rem; margin-right: 6px; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
 }
-.form-control:focus, .form-select:focus {
-  border-color: #334155;
-  box-shadow: 0 0 0 0.2rem rgba(51, 65, 85, 0.15);
+.panel-title { font-size: 1rem; margin-bottom: 16px; }
+
+.type-toggle { display: flex; gap: 10px; margin-bottom: 16px; }
+.type-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.87rem;
 }
-.btn-primary {
-  background-color: #334155;
-  border-color: #334155;
+.type-btn.expense.active { background: rgba(251,111,146,0.15); border-color: var(--rose); color: var(--rose); }
+.type-btn.income.active { background: rgba(52,211,153,0.15); border-color: var(--green); color: var(--green); }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
-.btn-primary:hover {
-  background-color: #1e293b;
-  border-color: #1e293b;
+
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
 }
-.list-group-item:hover {
-  background-color: #f1f5f9;
+.data-table tbody td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover { background: var(--surface-2); }
+.text-muted-custom { color: var(--text-muted); }
+
+.cat-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.74rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+.icon-btn:hover { color: var(--gold); border-color: var(--gold); }
+.icon-btn.danger:hover { color: var(--rose); border-color: var(--rose); }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 860px) {
+  .app-shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .sidebar {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .sidebar-user { order: 2; }
+  .sidebar-nav { order: 3; width: 100%; display: flex; overflow-x: auto; gap: 6px; }
+  .sidebar-nav .nav-section-label { display: none; }
+  .nav-item { width: auto; white-space: nowrap; }
+  .new-profil { width: 200px; }
+  .logout-btn { order: 1; margin-left: auto; padding: 8px 10px; }
+  .main-area { padding: 20px 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .balance-amount { font-size: 1.9rem; }
 }
 </style>

@@ -11,7 +11,7 @@ describe('App', () => {
 
   it('wechselt zur Registrierung', async () => {
     const wrapper = mount(App)
-    await wrapper.find('a.link-primary').trigger('click')
+    await wrapper.find('.auth-switch a').trigger('click')
     expect(wrapper.text()).toContain('Registrieren')
   })
 })
