@@ -642,7 +642,7 @@ h1, h2, .brand span { font-family: 'Space Grotesk', sans-serif; }
 }
 .logout-btn:hover { color: var(--rose); border-color: var(--rose); }
 
-.main-area { padding: 32px 40px; max-width: 900px; }
+.main-area { padding: 32px 48px; max-width: 1100px; }
 .main-header h1 { font-size: 1.4rem; margin-bottom: 20px; }
 
 .empty-state {
@@ -700,8 +700,8 @@ h1, h2, .brand span { font-family: 'Space Grotesk', sans-serif; }
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 12px;
 }
 
 .data-table { width: 100%; border-collapse: collapse; }
