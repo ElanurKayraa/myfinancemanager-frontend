@@ -72,6 +72,7 @@
           />
           <i v-if="umbenennenId !== profil.id" class="bi bi-pencil rename-icon" @click.stop="profilUmbenennenStarten(profil)"></i>
           <i v-else class="bi bi-check-lg rename-icon text-success" @click.stop="profilUmbenennenSpeichern(profil)"></i>
+          <i v-if="umbenennenId !== profil.id" class="bi bi-trash rename-icon delete-icon" @click.stop="profilLoeschen(profil)"></i>
         </button>
 
         <div class="new-profil">
@@ -356,6 +357,22 @@ async function profilUmbenennenSpeichern(profil: Profil) {
   }
 }
 
+async function profilLoeschen(profil: Profil) {
+  if (!confirm(`Profil "${profil.name}" wirklich löschen? Alle zugehörigen Einträge werden ebenfalls gelöscht.`)) return
+  fehler.value = null
+  try {
+    await fetch(`${BASE_URL}/profile/${profil.id}`, { method: 'DELETE' })
+    if (currentProfil.value?.id === profil.id) {
+      currentProfil.value = null
+      ausgaben.value = []
+      step.value = 'profil'
+    }
+    await ladeProfile()
+  } catch (e) {
+    fehler.value = 'Fehler beim Löschen des Profils.'
+  }
+}
+
 function profilAuswaehlen(profil: Profil) {
   currentProfil.value = profil
   step.value = 'dashboard'
@@ -612,6 +629,8 @@ h1, h2, .brand span { font-family: 'Space Grotesk', sans-serif; }
 .nav-item.active { background: var(--gold-dim); color: var(--gold); }
 .rename-icon { opacity: 0.6; }
 .rename-icon:hover { opacity: 1; }
+.delete-icon { margin-left: 6px; }
+.delete-icon:hover { color: var(--rose); }
 .rename-input {
   flex: 1;
   background: var(--bg);
@@ -700,11 +719,17 @@ h1, h2, .brand span { font-family: 'Space Grotesk', sans-serif; }
 .type-btn.income.active { background: rgba(52,211,153,0.15); border-color: var(--green); color: var(--green); }
 
 .form-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
-.form-grid .span-all { grid-column: 1 / -1; }
+.form-grid .span-all { flex-basis: 100%; }
+.form-grid input:not(.span-all),
+.form-grid select {
+  flex: 1 1 170px;
+  width: 170px;
+  min-width: 150px;
+}
 
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table thead th {
@@ -766,7 +791,8 @@ h1, h2, .brand span { font-family: 'Space Grotesk', sans-serif; }
   .new-profil { width: 200px; }
   .logout-btn { order: 1; margin-left: auto; padding: 8px 10px; }
   .main-area { padding: 20px 16px; }
-  .form-grid { grid-template-columns: 1fr; }
+  .form-grid input,
+  .form-grid select { flex-basis: 100%; }
   .balance-amount { font-size: 1.9rem; }
 }
 </style>
