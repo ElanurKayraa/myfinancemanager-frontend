@@ -6,12 +6,12 @@ describe('App', () => {
   it('zeigt beim Start das Anmelde-Formular', () => {
     const wrapper = mount(App)
     expect(wrapper.text()).toContain('Anmelden')
-    expect(wrapper.find('input[placeholder="Benutzername"]').exists()).toBe(true)
+    expect(wrapper.find('input[type="password"]').exists()).toBe(true)
   })
 
   it('wechselt zur Registrierung', async () => {
     const wrapper = mount(App)
-    await wrapper.find('.link').trigger('click')
+    await wrapper.find('a.link-primary').trigger('click')
     expect(wrapper.text()).toContain('Registrieren')
   })
 })
